@@ -3,6 +3,7 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.secrets.metastore import MetastoreBackend
 
+
 class StageJson2RedshiftOperator(BaseOperator):
     ui_color = '#358140'
 
@@ -20,17 +21,16 @@ class StageJson2RedshiftOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                redshift_conn_id="",
-                aws_credentials_id="",
-                table="",
-                s3_bucket="",
-                s3_key="",
-                json_format ="auto",
-                execution_date=None,
-                *args,
-                **kwargs
-                ):
-
+                 redshift_conn_id="",
+                 aws_credentials_id="",
+                 table="",
+                 s3_bucket="",
+                 s3_key="",
+                 json_format="auto",
+                 execution_date=None,
+                 *args,
+                 **kwargs
+                 ):
         super(StageJson2RedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
         self.aws_credentials_id = aws_credentials_id
@@ -43,15 +43,12 @@ class StageJson2RedshiftOperator(BaseOperator):
     def execute(self, context):
         self.log.info('StageJson2RedshiftOperator')
         metastoreBackend = MetastoreBackend()
-        aws_connection=metastoreBackend.get_connection(self.aws_credentials_id)
+        aws_connection = metastoreBackend.get_connection(self.aws_credentials_id)
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
         self.log.info("Clearing data from destination Redshift table")
         redshift.run("DELETE FROM {}".format(self.table))
 
-
-        # s3://bitano-murdock/song-data/A/A/B/TRAABDL12903CAABBA.json
-        # s3://bitano-murdock/log-data/2018/11/2018-11-01-events.json
         s3_dir = self.s3_key
         if self.execution_date:
             # Backfill a specific date
@@ -83,7 +80,6 @@ class StageToRedshiftOperator(BaseOperator):
                  # Example:
                  # redshift_conn_id=your-connection-name
                  *args, **kwargs):
-
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
         # Map params here
         # Example:
