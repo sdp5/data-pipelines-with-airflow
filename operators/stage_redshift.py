@@ -1,3 +1,7 @@
+from airflow.hooks.postgres_hook import PostgresHook
+from airflow.models import BaseOperator
+from airflow.utils.decorators import apply_defaults
+
 class StageToRedshiftOperator(BaseOperator):
     ui_color = '#358140'
     sql_template = """
