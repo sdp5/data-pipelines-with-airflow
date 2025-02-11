@@ -5,8 +5,10 @@ from airflow.secrets.metastore import MetastoreBackend
 
 
 class StageToRedshiftOperator(BaseOperator):
+    # Set UI color for the operator
     ui_color = '#358140'
 
+    # SQL COPY command template to load data into Redshift
     sql_template = """
         COPY {}
         FROM '{}'
@@ -19,6 +21,9 @@ class StageToRedshiftOperator(BaseOperator):
         JSON '{}'
     """
 
+    # Fields that support Jinja2 templating
+    template_fields = ('s3_key',)
+
     @apply_defaults
     def __init__(self,
                  redshift_conn_id="",
@@ -27,10 +32,8 @@ class StageToRedshiftOperator(BaseOperator):
                  s3_bucket="",
                  s3_key="",
                  json_format="auto",
-                 execution_date=None,
                  *args,
-                 **kwargs
-                 ):
+                 **kwargs):
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
         self.aws_credentials_id = aws_credentials_id
@@ -38,34 +41,33 @@ class StageToRedshiftOperator(BaseOperator):
         self.s3_bucket = s3_bucket
         self.s3_key = s3_key
         self.json_format = json_format
-        self.execution_date = execution_date
 
     def execute(self, context):
-        self.log.info('StageToRedshiftOperator')
-        metastoreBackend = MetastoreBackend()
-        aws_connection = metastoreBackend.get_connection(self.aws_credentials_id)
+        self.log.info('Starting StageToRedshiftOperator')
+
+        # Fetch AWS credentials from secrets manager or connection
+        metastore_backend = MetastoreBackend()
+        aws_connection = metastore_backend.get_connection(self.aws_credentials_id)
+
+        # Initialize the Redshift hook
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
-        self.log.info("Clearing data from destination Redshift table")
-        redshift.run("DELETE FROM {}".format(self.table))
+        # Clear destination table in Redshift
+        self.log.info(f"Clearing data from Redshift table: {self.table}")
+        redshift.run(f"DELETE FROM {self.table}")
 
-        s3_dir = self.s3_key
-        if self.execution_date:
-            # Backfill a specific date
-            year = str(self.execution_date.strftime("%Y"))
-            month = str(self.execution_date.strftime("%m"))
-            # day = str(self.execution_date.strftime("%d"))
-            # s3_dir = s3_dir.format(year, month, year, month, day)
-            s3_dir = s3_dir.format(year, month)
-        s3_path = """s3://{}/{}""".format(self.s3_bucket, s3_dir)
+        # Render S3 path (Airflow resolves templated `s3_key` automatically)
+        s3_path = f"s3://{self.s3_bucket}/{self.s3_key}"
 
-        formated_sql = StageToRedshiftOperator.sql_template.format(
+        # Format the SQL COPY command
+        formatted_sql = StageToRedshiftOperator.sql_template.format(
             self.table,
             s3_path,
             aws_connection.login,
             aws_connection.password,
             self.json_format
         )
-        formated_sql = formated_sql.replace("\n", "")
-        self.log.info("debug sql run:", formated_sql)
-        redshift.run(formated_sql)
+
+        # Log and execute the formatted SQL
+        self.log.info(f"Formatted SQL COPY command:\n{formatted_sql}")
+        redshift.run(formatted_sql)
