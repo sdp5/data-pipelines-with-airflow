@@ -11,7 +11,7 @@ from operators.load_fact import LoadFactOperator
 from operators.load_dimension import LoadDimensionOperator
 from operators.data_quality import DataQualityOperator
 from operators.query_run import RunListSQLOperator
-# from udacity.common.final_project_sql_statements import SqlQueries
+from udacity.common.final_project_sql_statements import SqlQueries
 
 # from airflow.operators.postgres_operator import PostgresOperator
 
