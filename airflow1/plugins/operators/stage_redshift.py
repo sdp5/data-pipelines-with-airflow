@@ -36,7 +36,7 @@ class StageRedshiftOperator(BaseOperator):
         self.json_format = kwargs.get('json_format', "auto")  # Safely get from kwargs
 
     def execute(self, context):
-        self.log.info('Starting StageToRedshiftOperator')
+        self.log.info('Starting StageRedshiftOperator')
 
         # Fetch AWS credentials
         metastore_backend = MetastoreBackend()
