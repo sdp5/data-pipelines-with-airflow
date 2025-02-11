@@ -1,11 +1,19 @@
-from operators.stage_redshift import StageToRedshiftOperator
-from operators.load_fact import LoadFactOperator
-from operators.load_dimension import LoadDimensionOperator
-from operators.data_quality import DataQualityOperator
+from __future__ import division, absolute_import, print_function
+from airflow.models import BaseOperator
+from airflow.plugins_manager import AirflowPlugin
 
-__all__ = [
-    'StageToRedshiftOperator',
-    'LoadFactOperator',
-    'LoadDimensionOperator',
-    'DataQualityOperator'
-]
+import operators
+import helpers
+
+# Defining the plugin class
+class UdacityPlugin(AirflowPlugin):
+    name = "udacity_plugin"
+    operators = [
+        operators.StageRedshiftOperator,
+        operators.LoadFactOperator,
+        operators.LoadDimensionOperator,
+        operators.DataQualityOperator
+    ]
+    helpers = [
+        helpers.SqlQueries
+    ]
