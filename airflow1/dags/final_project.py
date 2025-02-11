@@ -29,13 +29,13 @@ default_args = {
 }
 
 
-dag = DAG(
+@DAG(
+    'pipeline_dag',
     default_args=default_args,
     catchup=False,
     schedule_interval='0 * * * *',
     description='Load and transform data in Redshift with Airflow'
 )
-
 def final_project():
     sql_obj = SqlQueries()
 
