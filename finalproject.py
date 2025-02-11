@@ -54,7 +54,7 @@ def final_project():
         s3_bucket="mpd608",
         s3_key="log-data/{{ execution_date.year }}/{{ execution_date.month }}/",
         json_format="s3://mpd608/events_jpaths.json",
-        execution_date=date_run
+        # execution_date=date_run
     )
 
     stage_songs_to_redshift = StageToRedshiftOperator(
