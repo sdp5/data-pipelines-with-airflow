@@ -46,7 +46,7 @@ def final_project():
         list_sql=sql_obj.create_table_list
     )
 
-    stage_events_to_redshift = StageJson2RedshiftOperator(
+    stage_events_to_redshift = StageToRedshiftOperator(
         task_id='Stage_events',
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
@@ -57,7 +57,7 @@ def final_project():
         execution_date=date_run
     )
 
-    stage_songs_to_redshift = StageJson2RedshiftOperator(
+    stage_songs_to_redshift = StageToRedshiftOperator(
         task_id='Stage_songs',
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
