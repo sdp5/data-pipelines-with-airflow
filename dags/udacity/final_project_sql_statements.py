@@ -1,3 +1,5 @@
+
+
 class SqlQueries:
     # drop table
     drop_staging_events = "drop table if exists staging_events"

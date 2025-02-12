@@ -3,20 +3,21 @@ from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 from airflow.secrets.metastore import MetastoreBackend
 
-class StageToRedshiftOperator(BaseOperator):
+
+class StageJson2RedshiftOperator(BaseOperator):
     ui_color = '#358140'
+
     sql_template = """
         COPY {}
         FROM '{}'
         ACCESS_KEY_ID '{}'
         SECRET_ACCESS_KEY '{}'
         TIMEFORMAT as 'epochmillisecs'
-        TRUNCATECOLUMNS
-        BLANKSASNULL
+        TRUNCATECOLUMNS 
+        BLANKSASNULL 
         EMPTYASNULL
-        JSON '{}'
+        JSON '{}' 
     """
-    template_fields = ('s3_key',)
 
     @apply_defaults
     def __init__(self,
@@ -25,49 +26,51 @@ class StageToRedshiftOperator(BaseOperator):
                  table="",
                  s3_bucket="",
                  s3_key="",
-                 json_format="auto",  # Keep it optional with default
-                 *args, **kwargs):
-        super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
+                 json_format="auto",
+                 execution_date=None,
+                 *args,
+                 **kwargs
+                 ):
+        super(StageJson2RedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
         self.aws_credentials_id = aws_credentials_id
         self.table = table
         self.s3_bucket = s3_bucket
         self.s3_key = s3_key
-        self.json_format = kwargs.get('json_format', "auto")  # Safely get from kwargs
+        self.json_format = json_format
+        self.execution_date = execution_date
 
     def execute(self, context):
-        self.log.info('Starting StageToRedshiftOperator')
-
-        # Fetch AWS credentials
-        metastore_backend = MetastoreBackend()
-        aws_connection = metastore_backend.get_connection(self.aws_credentials_id)
-
-        if not aws_connection:
-            raise ValueError(f"Could not retrieve AWS credentials for {self.aws_credentials_id}")
-
-        # Initialize the Redshift hook
+        self.log.info('StageJson2RedshiftOperator')
+        metastoreBackend = MetastoreBackend()
+        aws_connection = metastoreBackend.get_connection(self.aws_credentials_id)
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
-        # Clear destination table in Redshift
-        self.log.info(f"Clearing data from Redshift table: {self.table}")
-        redshift.run(f"DELETE FROM {self.table}")
+        self.log.info("Clearing data from destination Redshift table")
+        redshift.run("DELETE FROM {}".format(self.table))
 
-        # Render S3 path
-        s3_path = f"s3://{self.s3_bucket}/{self.s3_key}"
+        # s3://bitano-murdock/song-data/A/A/B/TRAABDL12903CAABBA.json
+        # s3://bitano-murdock/log-data/2018/11/2018-11-01-events.json
+        s3_dir = self.s3_key
+        if self.execution_date:
+            # Backfill a specific date
+            year = str(self.execution_date.strftime("%Y"))
+            month = str(self.execution_date.strftime("%m"))
+            # day = str(self.execution_date.strftime("%d"))
+            # s3_dir = s3_dir.format(year, month, year, month, day)
+            s3_dir = s3_dir.format(year, month)
+        s3_path = """s3://{}/{}""".format(self.s3_bucket, s3_dir)
 
-        # Format the SQL COPY command
-        formatted_sql = StageToRedshiftOperator.sql_template.format(
+        formated_sql = StageJson2RedshiftOperator.sql_template.format(
             self.table,
             s3_path,
             aws_connection.login,
             aws_connection.password,
             self.json_format
         )
+        formated_sql = formated_sql.replace("\n", "")
+        self.log.info("debug sql run:", formated_sql)
+        redshift.run(formated_sql)
 
-        # Log and execute the SQL
-        try:
-            self.log.info(f"Executing SQL COPY command:\n{formatted_sql}")
-            redshift.run(formatted_sql)
-        except Exception as e:
-            self.log.error(f"Failed to execute COPY command: {str(e)}")
-            raise
+    def execute(self, context):
+        self.log.info('StageToRedshiftOperator not implemented yet')
