@@ -8,6 +8,7 @@ from final_project_operators.load_dimension import LoadDimensionOperator
 from final_project_operators.data_quality import DataQualityOperator
 
 # Import helper module
+import final_project_operators
 import helpers
 
 
@@ -15,10 +16,10 @@ import helpers
 class UdacityPlugin(AirflowPlugin):
     name = "udacity_plugin"
     operators = [
-        StageToRedshiftOperator,  # Use the direct class reference
-        LoadFactOperator,
-        LoadDimensionOperator,
-        DataQualityOperator
+        final_project_operators.StageToRedshiftOperator,  # Use the direct class reference
+        final_project_operators.LoadFactOperator,
+        final_project_operators.LoadDimensionOperator,
+        final_project_operators.DataQualityOperator
     ]
     helpers = [
         helpers.SqlQueries
