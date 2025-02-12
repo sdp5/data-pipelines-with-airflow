@@ -13,6 +13,7 @@ from helpers import SqlQueries
 # from operators.load_dimension import LoadDimensionOperator
 # from operators.data_quality import DataQualityOperator
 from operators.query_run import RunListSQLOperator
+
 # from udacity.common.final_project_sql_statements import SqlQueries
 # from airflow.operators.postgres_operator import PostgresOperator
 
@@ -21,7 +22,7 @@ date_run = datetime.datetime.strptime(sdate, "%d/%m/%Y")
 # date_run  = datetime.datetime.now()
 
 default_args = {
-    'owner': 'parrishm',
+    'owner': '253464027368',
     'start_date': pendulum.now(),
     'depends_on_past': False,
     'retry_delay': timedelta(minutes=5),
@@ -46,7 +47,7 @@ def final_project():
         task_id="Create_table",
         conn_id="redshift",
         list_sql=sql_obj.create_table_list
-        # list_sql = SqlQueries.create_table_list
+        # list_sql=SqlQueries.create_table_list
     )
 
     stage_events_to_redshift = StageRedshiftOperator(
