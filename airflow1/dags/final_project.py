@@ -6,7 +6,7 @@ from airflow.decorators import dag
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.final_project_operators.empty import EmptyOperator
 
-from final_project_operators.stage_redshift import StageJson2RedshiftOperator
+from final_project_operators.stage_redshift import StageToRedshiftOperator
 from final_project_operators.load_fact import LoadFactOperator
 from final_project_operators.load_dimension import LoadDimensionOperator
 from final_project_operators.data_quality import DataQualityOperator
