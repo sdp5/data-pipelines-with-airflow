@@ -46,6 +46,7 @@ def final_project():
         task_id="Create_table",
         conn_id="redshift",
         list_sql=sql_obj.create_table_list
+        # list_sql = SqlQueries.create_table_list
     )
 
     stage_events_to_redshift = StageToRedshiftOperator(
