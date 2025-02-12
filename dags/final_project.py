@@ -12,8 +12,7 @@ from final_project_operators.load_dimension import LoadDimensionOperator
 from final_project_operators.data_quality import DataQualityOperator
 from final_project_operators.query_run import RunListSQLOperator
 from udacity.common.final_project_sql_statements import SqlQueries
-
-# from airflow.final_project_operators.postgres_operator import PostgresOperator
+from airflow.final_project_operators.postgres_operator import PostgresOperator
 
 sdate = "02/10/2025"
 date_run = datetime.datetime.strptime(sdate, "%d/%m/%Y")
