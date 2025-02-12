@@ -6,7 +6,7 @@ from airflow.decorators import dag
 from airflow.operators.dummy_operator import DummyOperator
 # from airflow.final_project_operators.empty import EmptyOperator
 
-from final_project_operators.stage_redshift import StageJson2RedshiftOperator
+from final_project_operators.stage_redshift import StageToRedshiftOperator
 from final_project_operators.load_fact import LoadFactOperator
 from final_project_operators.load_dimension import LoadDimensionOperator
 from final_project_operators.data_quality import DataQualityOperator
@@ -46,7 +46,7 @@ def final_project():
         list_sql=sql_obj.create_table_list
     )
 
-    stage_events_to_redshift = StageJson2RedshiftOperator(
+    stage_events_to_redshift = StageToRedshiftOperator(
         task_id='Stage_events',
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
@@ -57,7 +57,7 @@ def final_project():
         # execution_date=date_run
     )
 
-    stage_songs_to_redshift = StageJson2RedshiftOperator(
+    stage_songs_to_redshift = StageToRedshiftOperator(
         task_id='Stage_songs',
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
