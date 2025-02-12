@@ -41,36 +41,38 @@ class StageToRedshiftOperator(BaseOperator):
         self.execution_date = execution_date
 
     def execute(self, context):
-        self.log.info('StageToRedshiftOperator')
+        self.log.info('Starting StageToRedshiftOperator')
+
+        # Retrieve AWS credentials
         metastoreBackend = MetastoreBackend()
         aws_connection = metastoreBackend.get_connection(self.aws_credentials_id)
+
+        # Connect to Redshift
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
-        self.log.info("Clearing data from destination Redshift table")
-        redshift.run("DELETE FROM {}".format(self.table))
+        # Clear existing data in the table
+        self.log.info(f"Clearing data from destination Redshift table {self.table}")
+        redshift.run(f"DELETE FROM {self.table}")
 
-        # s3://bitano-murdock/song-data/A/A/B/TRAABDL12903CAABBA.json
-        # s3://bitano-murdock/log-data/2018/11/2018-11-01-events.json
+        # Format the S3 path for the COPY command
         s3_dir = self.s3_key
         if self.execution_date:
-            # Backfill a specific date
             year = str(self.execution_date.strftime("%Y"))
             month = str(self.execution_date.strftime("%m"))
-            # day = str(self.execution_date.strftime("%d"))
-            # s3_dir = s3_dir.format(year, month, year, month, day)
+            # Format the path using year and month (or add day if necessary)
             s3_dir = s3_dir.format(year, month)
-        s3_path = """s3://{}/{}""".format(self.s3_bucket, s3_dir)
 
-        formated_sql = StageToRedshiftOperator.sql_template.format(
+        s3_path = f"s3://{self.s3_bucket}/{s3_dir}"
+
+        # Format the SQL COPY command
+        formatted_sql = StageToRedshiftOperator.sql_template.format(
             self.table,
             s3_path,
             aws_connection.login,
             aws_connection.password,
             self.json_format
-        )
-        formated_sql = formated_sql.replace("\n", "")
-        self.log.info("debug sql run:", formated_sql)
-        redshift.run(formated_sql)
+        ).replace("\n", "")
 
-    def execute(self, context):
-        self.log.info('StageToRedshiftOperator not implemented yet')
+        # Log the debug information and run the COPY command
+        self.log.info(f"Running SQL command: {formatted_sql}")
+        redshift.run(formatted_sql)
