@@ -4,7 +4,7 @@ from airflow.utils.decorators import apply_defaults
 from airflow.secrets.metastore import MetastoreBackend
 
 
-class StageToRedshiftOperator(BaseOperator):
+class StageRedshiftOperator(BaseOperator):
     ui_color = '#358140'
 
     sql_template = """
@@ -31,7 +31,7 @@ class StageToRedshiftOperator(BaseOperator):
                  *args,
                  **kwargs
                  ):
-        super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
+        super(StageRedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
         self.aws_credentials_id = aws_credentials_id
         self.table = table
@@ -41,7 +41,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.execution_date = execution_date
 
     def execute(self, context):
-        self.log.info('Starting StageToRedshiftOperator')
+        self.log.info('Starting StageRedshiftOperator')
 
         # Retrieve AWS credentials
         metastoreBackend = MetastoreBackend()
@@ -65,7 +65,7 @@ class StageToRedshiftOperator(BaseOperator):
         s3_path = f"s3://{self.s3_bucket}/{s3_dir}"
 
         # Format the SQL COPY command
-        formatted_sql = StageToRedshiftOperator.sql_template.format(
+        formatted_sql = StageRedshiftOperator.sql_template.format(
             self.table,
             s3_path,
             aws_connection.login,

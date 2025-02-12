@@ -4,11 +4,11 @@ import pendulum
 import os
 from airflow.decorators import dag
 from airflow.operators.dummy_operator import DummyOperator
-from operators import (StageToRedshiftOperator, LoadFactOperator,
+from operators import (StageRedshiftOperator, LoadFactOperator,
                        LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 
-# from operators.stage_redshift import StageToRedshiftOperator
+# from operators.stage_redshift import StageRedshiftOperator
 # from operators.load_fact import LoadFactOperator
 # from operators.load_dimension import LoadDimensionOperator
 # from operators.data_quality import DataQualityOperator
@@ -49,7 +49,7 @@ def final_project():
         # list_sql = SqlQueries.create_table_list
     )
 
-    stage_events_to_redshift = StageToRedshiftOperator(
+    stage_events_to_redshift = StageRedshiftOperator(
         task_id='Stage_events',
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",
@@ -60,7 +60,7 @@ def final_project():
         # execution_date=date_run
     )
 
-    stage_songs_to_redshift = StageToRedshiftOperator(
+    stage_songs_to_redshift = StageRedshiftOperator(
         task_id='Stage_songs',
         redshift_conn_id="redshift",
         aws_credentials_id="aws_credentials",

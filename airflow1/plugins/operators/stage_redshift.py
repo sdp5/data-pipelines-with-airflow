@@ -41,7 +41,7 @@ class StageToRedshiftOperator(BaseOperator):
         self.execution_date = execution_date
 
     def execute(self, context):
-        self.log.info('StageToRedshiftOperator')
+        self.log.info('StageRedshiftOperator')
         metastoreBackend = MetastoreBackend()
         aws_connection = metastoreBackend.get_connection(self.aws_credentials_id)
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
@@ -73,4 +73,4 @@ class StageToRedshiftOperator(BaseOperator):
         redshift.run(formated_sql)
 
     def execute(self, context):
-        self.log.info('StageToRedshiftOperator not implemented yet')
+        self.log.info('StageRedshiftOperator not implemented yet')

@@ -15,7 +15,7 @@ import helpers
 class UdacityPlugin(AirflowPlugin):
     name = "udacity_plugin"
     operators = [
-        final_project_operators.StageToRedshiftOperator,  # Use the direct class reference
+        final_project_operators.StageRedshiftOperator,  # Use the direct class reference
         final_project_operators.LoadFactOperator,
         final_project_operators.LoadDimensionOperator,
         final_project_operators.DataQualityOperator
