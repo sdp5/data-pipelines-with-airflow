@@ -8,7 +8,7 @@ class LoadFactOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                 # Define your operators params (with defaults) here
+                 # Define your final_project_operators params (with defaults) here
                  # Example:
                  # conn_id = your-connection-name
                  *args, **kwargs):

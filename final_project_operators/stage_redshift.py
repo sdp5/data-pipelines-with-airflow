@@ -49,8 +49,6 @@ class StageJson2RedshiftOperator(BaseOperator):
         self.log.info("Clearing data from destination Redshift table")
         redshift.run("DELETE FROM {}".format(self.table))
 
-        # s3://bitano-murdock/song-data/A/A/B/TRAABDL12903CAABBA.json
-        # s3://bitano-murdock/log-data/2018/11/2018-11-01-events.json
         s3_dir = self.s3_key
         if self.execution_date:
             # Backfill a specific date

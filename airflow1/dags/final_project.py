@@ -4,7 +4,7 @@ import pendulum
 import os
 from airflow.decorators import dag
 from airflow.operators.dummy_operator import DummyOperator
-# from airflow.operators.empty import EmptyOperator
+# from airflow.final_project_operators.empty import EmptyOperator
 
 from final_project_operators.stage_redshift import StageJson2RedshiftOperator
 from final_project_operators.load_fact import LoadFactOperator
@@ -13,7 +13,7 @@ from final_project_operators.data_quality import DataQualityOperator
 from final_project_operators.query_run import RunListSQLOperator
 from udacity.common.final_project_sql_statements import SqlQueries
 
-# from airflow.operators.postgres_operator import PostgresOperator
+# from airflow.final_project_operators.postgres_operator import PostgresOperator
 
 sdate = "02/10/2025"
 date_run = datetime.datetime.strptime(sdate, "%d/%m/%Y")
