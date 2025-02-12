@@ -4,7 +4,7 @@ from airflow.utils.decorators import apply_defaults
 from airflow.secrets.metastore import MetastoreBackend
 
 
-class StageJson2RedshiftOperator(BaseOperator):
+class StageToRedshiftOperator(BaseOperator):
     ui_color = '#358140'
 
     sql_template = """
@@ -31,7 +31,7 @@ class StageJson2RedshiftOperator(BaseOperator):
                  *args,
                  **kwargs
                  ):
-        super(StageJson2RedshiftOperator, self).__init__(*args, **kwargs)
+        super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
         self.redshift_conn_id = redshift_conn_id
         self.aws_credentials_id = aws_credentials_id
         self.table = table
@@ -41,7 +41,7 @@ class StageJson2RedshiftOperator(BaseOperator):
         self.execution_date = execution_date
 
     def execute(self, context):
-        self.log.info('StageJson2RedshiftOperator')
+        self.log.info('StageToRedshiftOperator')
         metastoreBackend = MetastoreBackend()
         aws_connection = metastoreBackend.get_connection(self.aws_credentials_id)
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
@@ -61,7 +61,7 @@ class StageJson2RedshiftOperator(BaseOperator):
             s3_dir = s3_dir.format(year, month)
         s3_path = """s3://{}/{}""".format(self.s3_bucket, s3_dir)
 
-        formated_sql = StageJson2RedshiftOperator.sql_template.format(
+        formated_sql = StageToRedshiftOperator.sql_template.format(
             self.table,
             s3_path,
             aws_connection.login,
