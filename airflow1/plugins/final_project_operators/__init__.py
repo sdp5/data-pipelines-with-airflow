@@ -8,6 +8,7 @@ from final_project_operators.load_dimension import LoadDimensionOperator
 from final_project_operators.data_quality import DataQualityOperator
 
 # Import helper module
+import final_project_operators
 import helpers
 
 
