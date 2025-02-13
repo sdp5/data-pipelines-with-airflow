@@ -175,6 +175,9 @@ poetry.toml
 # LSP config files
 pyrightconfig.json
 
+### PyCharm ###
+.idea
+
 ### VisualStudioCode ###
 .vscode/*
 !.vscode/settings.json
