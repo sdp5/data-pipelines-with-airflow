@@ -1,118 +1,69 @@
-# Project: Data Pipelines with Airflow
+# Data Pipelines with Airflow
 
-A music streaming company, Sparkify, has decided that it is time to introduce more automation and monitoring to their data warehouse ETL pipelines and come to the conclusion that the best tool to achieve this is Apache Airflow.
+Welcome to the Data Pipelines with Airflow project! This endeavor will provide you with a solid understanding of Apache Airflow's core concepts. Your task involves creating custom operators to execute essential functions like staging data, populating a data warehouse, and validating data through the pipeline.
 
-They have decided to create high grade data pipelines that are dynamic and built from reusable tasks, can be monitored, and allow easy backfills. They have also noted that the data quality plays a big part when analyses are executed on top the data warehouse and want to run tests against their datasets after the ETL steps have been executed to catch any discrepancies in the datasets.
+To begin, we've equipped you with a project template that streamlines imports and includes four unimplemented operators. These operators need your attention to turn them into functional components of a data pipeline. The template also outlines tasks that must be interconnected for a coherent and logical data flow.
 
-The source data resides in S3 and needs to be processed in Sparkify's data warehouse in Amazon Redshift. The source datasets consist of JSON logs that tell about user activity in the application and JSON metadata about the songs the users listen to.
+A helper class containing all necessary SQL transformations is at your disposal. While you won't have to write the ETL processes, your responsibility lies in executing them using your custom operators.
 
-## Prerequisites
-- Create an IAM User in AWS.
-  - An IAM user: `awsuser` has been created with permissions: 
-    - `AdministrationAccess`
-    - `AmazonRedshiftFullAccess`
-    - `AmazonS3FullAccess`
-  - On AWS Cloudshell, a role has been created. Using -
+## Initiating the Airflow Web Server
+Ensure [Docker Desktop](https://www.docker.com/products/docker-desktop/) is installed before proceeding.
 
-   ```
-   aws iam create-role --role-name my-redshift-service-role --assume-role-policy-document '{
-       "Version": "2012-10-17",
-       "Statement": [
-           {
-               "Effect": "Allow",
-               "Principal": {
-                   "Service": "redshift.amazonaws.com"
-               },
-               "Action": "sts:AssumeRole"
-           }
-       ]
-   }'
-
-   aws iam attach-role-policy --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess --role-name my-redshift-service-role
-   ```
-
-- Configure Redshift Serverless in AWS.
-  - Create a Redshift serverless namespace and workspace.
-    - Setup database and associate `IAM` role.
-    - Make workspace publicly accessible temporarily.
-    - Setup appropriate `Inbound` rules in the SecurityGroup.
-
-## Deploy Airflow
+To bring up the entire app stack up, we use [docker-compose](https://docs.docker.com/engine/reference/commandline/compose_up/) as shown below
 
 ```bash
-export AIRFLOW_HOME=$HOME/local/airflow
-pip install apache-airflow
-pip install apache-airflow-providers-amazon
-pip install apache-airflow-providers-google
-
-airflow db init # Initialise Airflow
-
-nano airflow.cfg  # Setup configuration
-dags_folder = <project_folder>/dags
-plugins_folder = <project_folder>/plugins
-
-airflow users create --role Admin --username admin --email admin@example.com \
- --firstname admin --lastname admin --password passwd
-
-airflow webserver -p 8080 # Start Airflow WebUI
-airflow scheduler         # Start Scheduler
+docker-compose up -d
 ```
+Visit http://localhost:8080 once all containers are up and running.
 
-## Setting up Connections
+## Configuring Connections in the Airflow Web Server UI
+![Airflow Web Server UI. Credentials: `airflow`/`airflow`.](assets/login.png)
 
-- Connect Airflow and AWS
-  - On Airflow WebUI. Navigate to `Menu` > `Admin` > `Connections`
-  - Create/edit `aws_default` with `access_key`, `secret_key` and `session_token`.
-  - Test and Save!
+On the Airflow web server UI, use `airflow` for both username and password.
+* Post-login, navigate to **Admin > Connections** to add required connections - specifically, `aws_credentials` and `redshift`.
+* Don't forget to start your Redshift cluster via the AWS console.
+* After completing these steps, run your DAG to ensure all tasks are successfully executed.
 
+## Getting Started with the Project
+1. The project template package comprises three key components:
+   * The **DAG template** includes imports and task templates but lacks task dependencies.
+   * The **operators** folder with operator templates.
+   * A **helper class** for SQL transformations.
 
-- Connect Airflow to AWS Redshift Serverless
-  - On Airflow WebUI. Navigate to `Menu` > `Admin` > `Connections`
-  - Create/edit `redshift` with `Host`, `Database`, `User`, `Password` and `Port`.
-  - Test and Save!
+1. With these template files, you should see the new DAG in the Airflow UI, with a graph view resembling the screenshot below:
+![Project DAG in the Airflow UI](assets/final_project_dag_graph1.png)
+You should be able to execute the DAG successfully, but if you check the logs, you will see only `operator not implemented` messages.
 
-- Setup Airflow Variables
+## DAG Configuration
+In the DAG, add `default parameters` based on these guidelines:
+* No dependencies on past runs.
+* Tasks are retried three times on failure.
+* Retries occur every five minutes.
+* Catchup is turned off.
+* No email on retry.
 
-   <img src="screen-shots/airflow-variables.png" alt="Airflow Variables" width="500"/>
+Additionally, configure task dependencies to match the flow depicted in the image below:
+![Working DAG with correct task dependencies](assets/final_project_dag_graph2.png)
 
-## Project Structure
+## Developing Operators
+To complete the project, build four operators for staging data, transforming data, and performing data quality checks. While you can reuse code from Project 2, leverage Airflow's built-in functionalities like connections and hooks whenever possible to let Airflow handle the heavy lifting.
 
-```bash
-.
-├── airflow1
-│   ├── dags
-│   └── plugins
-│       ├── helpers
-│       └── operators
-├── assets
-├── dags          # Airflow DAG Scripts
-├── plugins       # Airflow operators and helpers 
-│   ├── helpers
-│   ├── operators
-└── screen-shots  # Airflow and Redshift screenshots
-```
+### Stage Operator
+Load any JSON-formatted files from S3 to Amazon Redshift using the stage operator. The operator should create and run a SQL COPY statement based on provided parameters, distinguishing between JSON files. It should also support loading timestamped files from S3 based on execution time for backfills.
 
-## Running the Project
+### Fact and Dimension Operators
+Utilize the provided SQL helper class for data transformations. These operators take a SQL statement, target database, and optional target table as input. For dimension loads, implement the truncate-insert pattern, allowing for switching between insert modes. Fact tables should support append-only functionality.
 
-```bash
-# Start Airflow
-airflow webserver -p 8080
-airflow scheduler
-```
+### Data Quality Operator
+Create the data quality operator to run checks on the data using SQL-based test cases and expected results. The operator should raise an exception and initiate task retry and eventual failure if test results don't match expectations.
 
-List DAGs `airflow dags list`. <br>To check Airflow - locate and run `hello_world` DAG on the WebUI.
+## Reviewing Starter Code
+Before diving into development, familiarize yourself with the following files:
+- [plugins/operators/data_quality.py](plugins/operators/data_quality.py)
+- [plugins/operators/load_fact.py](plugins/operators/load_fact.py)
+- [plugins/operators/load_dimension.py](plugins/operators/load_dimension.py)
+- [plugins/operators/stage_redshift.py](plugins/operators/stage_redshift.py)
+- [plugins/helpers/sql_queries.py](plugins/helpers/sql_queries.py)
+- [dags/final_project.py](dags/final_project.py)
 
-1. Run `create_tables` DAG first to connect Redshift and create all the tables. 
-   - Navigate to RedShift Query Editor on AWS to verify.
-
-2. Then run `etl` DAG. This will execute tasks:
-   - `Stage_events`
-   - `Stage_songs`
-   - `Load_songplays_fact_table`
-   - `Load_song_dim_table`
-   - `Load_user_dim_table`
-   - `Load_artist_dim_table`
-   - `Load_time_dim_table`
-   - `Run_data_quality_checks`
-
-If successful, all the data will be ingested to RedShift, see `screen-shots` dir.
+Now you're ready to embark on this exciting journey into the world of Data Pipelines with Airflow!
